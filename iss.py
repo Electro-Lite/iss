@@ -44,6 +44,7 @@ plt.show()
 #end task1
 
 #begin task2
+
 s-=Avg
 s/=AbsMax
 #begin sequencing
@@ -110,15 +111,15 @@ ax[0].grid(alpha=0.5, linestyle='--')
 
 f = np.arange(G.size) / N * fs
 # zobrazujeme prvni pulku spektra
-ax[1].plot(f[:f.size//2+1], G[:G.size//2+1])
+ax[1].plot(range(1024), s_seg_spec)
 ax[1].set_xlabel('$f[Hz]$')
 ax[1].set_title('Spektralni hustota vykonu [dB]')
 ax[1].grid(alpha=0.5, linestyle='--')
 
 s_seg_spec = fft(s_seg)
-G = (1/N * np.abs(s_seg_spec)**2)
+G = (np.abs(s_seg_spec))
 
-ax[2].plot(f[:f.size//2+1], G[:G.size//2+1])
+ax[2].plot(range(G.size//2+1), G[:G.size//2+1])
 ax[2].set_xlabel('$f[Hz]$')
 ax[2].set_title('Spektralni hustota vykonu [dB]')
 ax[2].grid(alpha=0.5, linestyle='--')
@@ -144,7 +145,19 @@ plt.show()
 #end taks4
 #begin task5
 #freq "ručně" ...
-
+Gavg =0
+cnt=0
+cos4= np.zeros((4,2))
+for i in range(1024):
+    Gavg+= abs(G[i])
+Gavg=Gavg/1024
+for i in G[:G.size//2+1]:
+    if abs(i)>15:
+        print(i,(np.where(G==i)[0]*16000/1024)[0])
+        cos4[cnt,0]=i
+        cos4[cnt,1]=(np.where(G==i)[0]*16000/1024)[0]
+        cnt+=1
+print(cos4)
 """
 fftmax=np.zeros((4,2),dtype=object)
 fftmax[0,0]= int(np.where(s_seg_spec==max(s_seg_spec))[0])
@@ -196,3 +209,21 @@ for i in range(1024):
             fftmax[0]=s_seg_spec[i]
 """
 #end taks5
+#begin task6
+rat=(16000/1024)
+sins = np.zeros((16000*3))
+for i in range(len(sins)):
+    t=i/16000
+    sins[i] = np.sin(2 * np.pi *cos4[0,1] * t ) + np.sin(2 * np.pi *cos4[1,1] * t ) +np.sin(2 * np.pi *cos4[2,1] * t )+np.sin(2 * np.pi *cos4[3,1] * t )
+    #cosines and mages and vir done
+plt.plot(range(len(sins)),sins)
+plt.show()
+sf.write('new_file.wav', sins, fs)
+
+s_seg= sins[1024:2048]
+s_seg_spec = np.fft.fft(s_seg)
+G = (np.abs(s_seg_spec))
+
+plt.plot(range(G.size//2+1), G[:G.size//2+1])
+plt.show()
+# filtr timew
